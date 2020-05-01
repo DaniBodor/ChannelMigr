@@ -12,6 +12,7 @@
 */
 
 
+current_dir = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
 start_index = 1;	// folder number to start with
 analysis_channels = newArray(1);
 analysis_channels[0]=2;	// which channels to analyze
@@ -35,7 +36,7 @@ R="R";
 data_basedir = getDirectory("");
 subdir = getFileList(data_basedir);
 
-current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;
+current_dir = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds"+File.separator;
 general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+File.separator;
 File.makeDirectory(general_outdir);
 
@@ -47,7 +48,7 @@ log_out = general_outdir + "LOGs" + File.separator;
 File.makeDirectory(log_out);
 
 
-py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
+py_src = current_dir + "src/TrackMate_ChannelMigr.py";
 py_as_string = File.openAsString(py_src);
 
 macrostart = getTime();
