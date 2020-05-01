@@ -1,10 +1,10 @@
 /*TO DO:
  * X output data to correct folders
- * save general log (MyWindow) after each file
+ * X save progress log regularly
  * X rename MyWindow log window
  * create python code to collect CSV data
  * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
- * fix channel naming
+ * X fix channel naming (this was not a naming issue, but an issue of chossing correct channel)
  * make 2Xloop rather than copy/paste the patch/cell stuff 
  */
 
@@ -19,8 +19,12 @@ cell_thresh		= 0.5;
 cell_linkdist	= 15;
 
 start_index = 1;	// folder number to start with
-analysis_channels = newArray(2);
+analysis_channels = newArray(1);
+analysis_channels[0]=2;
 
+// used for CURR_TIME function
+P="P";
+R="R";
 
 data_basedir = getDirectory("");
 subdir = getFileList(data_basedir);
@@ -84,16 +88,16 @@ for (d=start_index-1; d<subdir.length; d++){
 
 				run("Properties...", "unit=px pixel_width=1 pixel_height=1");
 				
-				PRINT_TIME("opening file: "+list[i]);
+				CURR_TIME("opening file: "+list[i],P);
 				
 				for (j=0;j<analysis_channels.length;j++){
 					anal_channel = analysis_channels[j];
-					data = list[i] + " --- Channel " + anal_channel;
+					data = list[i] + " ---Channel" + anal_channel;
 					Stack.setChannel(anal_channel);
 					Stack.setDisplayMode("grayscale");
 					before=getTime();
 					
-					PRINT_TIME ("run python on: " + data);
+					CURR_TIME ("run python on: " + data,P);
 					print("\n");
 					// the next lines will be called with the python py_as_string to generate the variable from this macro
 					if (anal_channel == 1){
@@ -169,7 +173,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					
 					after=getTime();
 					duration = round((after-before)/1000);
-					PRINT_TIME ("Trackmate finished ("+duration+" s)");
+					CURR_TIME ("Trackmate finished ("+duration+" s)",P);
 		
 					//save track and spots statistics
 
@@ -200,13 +204,15 @@ for (d=start_index-1; d<subdir.length; d++){
 					run("Collect Garbage");
 				}
 				print(progress_log, IJ.freeMemory());
+				selectWindow(progress_log_short);
+				saveAs("Text", log_out+"_ProgressLog"+CURR_TIME("",R)+".txt");
 			}
 		}
 	}
 }
 
 
-PRINT_TIME("finished");
+CURR_TIME("finished",P);
 macrofinish = getTime();
 duration = round((macrofinish-macrostart)/1000);
 print("\n############\nMACRO IS FINISHED!\ntotal duration: "+duration+" seconds\n############\n");
@@ -214,14 +220,18 @@ print("\n############\nMACRO IS FINISHED!\ntotal duration: "+duration+" seconds\
 
 
 
-
-function PRINT_TIME(string){
+function CURR_TIME(string,PrintOrReturn){
 	getDateAndTime(year, month, dayOfWeek, dayOfMonth, hour, minute, second, msec);
 	current_date = "" + year-2000 + IJ.pad(month+1,2) + IJ.pad(dayOfMonth,2);
 	
 	hour = IJ.pad(hour,2);
 	min = IJ.pad(minute,2);
 	sec = IJ.pad(second,2);
-	curr_time = hour+":"+min+":"+sec;
-	print(current_date,curr_time,"-",string);
+	curr_time = hour+min+sec;
+	if (lengthOf(string) > 0)	return_string = current_date+curr_time+"_"+string;
+	else						return_string = current_date+curr_time;
+	
+	
+	if (PrintOrReturn==R) 		return return_string;
+	else if (PrintOrReturn==P) 	print (return_string);
 }
