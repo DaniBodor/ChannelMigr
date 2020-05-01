@@ -2,13 +2,14 @@
  * X output data to correct folders
  * X save progress log regularly
  * X rename MyWindow log window
- * create python code to collect CSV data
  * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
  * X fix channel naming (this was not a naming issue, but an issue of chossing correct channel)
  * make 2Xloop rather than copy/paste the patch/cell stuff 
  * X create output folder rather than have generic ones (to distinguish between experiments)
  * X fix having many progress log windows open
- */
+ * create python code to collect CSV data
+ * create IJM code to generate registration videos based on CSV data
+*/
 
 
 start_index = 1;	// folder number to start with
