@@ -6,7 +6,8 @@
  * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
  * X fix channel naming (this was not a naming issue, but an issue of chossing correct channel)
  * make 2Xloop rather than copy/paste the patch/cell stuff 
- * output to folder with current start time (rather than overwrite results)
+ * X create output folder rather than have generic ones (to distinguish between experiments)
+ * X fix having many progress log windows open
  */
 
 
@@ -34,9 +35,16 @@ data_basedir = getDirectory("");
 subdir = getFileList(data_basedir);
 
 current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;
-xml_out = current_dir + "output\\XMLs" + File.separator;
-csv_out = current_dir + "output\\CSVs" + File.separator;
-log_out = current_dir + "output\\LOGs" + File.separator;
+general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+File.separator;
+File.makeDirectory(general_outdir);
+
+xml_out = general_outdir + "XMLs" + File.separator;
+File.makeDirectory(xml_out);
+csv_out = general_outdir + "CSVs" + File.separator;
+File.makeDirectory(csv_out);
+log_out = general_outdir + "LOGs" + File.separator;
+File.makeDirectory(log_out);
+
 
 py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
 py_as_string = File.openAsString(py_src);
@@ -44,7 +52,7 @@ py_as_string = File.openAsString(py_src);
 macrostart = getTime();
 start_time = CURR_TIME("",R);
 
-progress_log = "[Progress_Log_"+start_time+".txt]";
+progress_log = "[Progress_Log.txt]";
 
 // make sure any open windows, logs, etc are closed/cleared before starting
 print ("\\Clear");
@@ -82,7 +90,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				// open files
 				open(dir+list[i]);
 				A=getTitle();
-				print(progress_log, start_index+"_"+list[i]);
+				print(progress_log, d+1+"_"+list[i]);
 
 				// print pixel settings
 				print("\\Clear");	//this print is kinda dumb
@@ -117,10 +125,10 @@ for (d=start_index-1; d<subdir.length; d++){
 					}
 					channel_line = "TARGET_CHANNEL = " + anal_channel + "\n";
 					//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
-					savename_line = "savename = r'"+xml_out+start_index+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
+					savename_line = "savename = r'"+xml_out+d+1+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
 					//print(savename_line);
 					//waitForUser("string");
-					python_prefix = slinkdist_line + thresh_line + radius_line + channel_line + savename_line;
+					python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
 					eval("python",python_prefix + py_as_string);
 
 					repeat_python = 1;
@@ -184,7 +192,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					if (isOpen("Spots in tracks statistics")){
 						selectWindow("Spots in tracks statistics");
 						nSpots = getValue("results.count");
-						saveAs("Results", csv_out+start_index+"_"+data+"_SpotsStats.csv");
+						saveAs("Results", csv_out+d+1+"_"+data+"_SpotsStats.csv");
 						run("Close");
 						selectWindow("Track statistics");
 						nTracks = getValue("results.count");
@@ -201,7 +209,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				}
 				
 				selectWindow("Log");
-				saveAs("Text", log_out+start_index+"_"+list[i]+"_Log.txt");
+				saveAs("Text", log_out+d+1+"_"+list[i]+"_Log.txt");
 				close();
 				print(progress_log, IJ.freeMemory());
 				for (q = 0; q < 10; q++) {
