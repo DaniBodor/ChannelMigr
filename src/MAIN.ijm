@@ -1,3 +1,12 @@
+/*TO DO:
+ * output data to correct folders
+ * save general log (MyWindow) after each file
+ * rename MyWindow log window
+ * create python code to collect CSV data
+ */
+
+
+
 patch_radius	= 2.5;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
 patch_thresh	= 500;
 patch_linkdist	= 6;
@@ -14,8 +23,8 @@ subdir = getFileList(basedir);
 out = basedir+"TrackMate_Analysis"+File.separator;
 File.makeDirectory(out);
 
-py = "TrackMate_FrictionPaper.py";
-script = File.openAsString(basedir+py);
+py = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\src\\TrackMate_ChannelMigr.py";
+py_as_string = File.openAsString(basedir+py);
 
 macrostart = getTime();
 
@@ -75,7 +84,7 @@ for (d=0;d<subdir.length;d++){
 					
 					PRINT_TIME ("run python on: " + data);
 					print("\n");
-					// the next lines will be called with the python script to generate the variable from this macro
+					// the next lines will be called with the python py_as_string to generate the variable from this macro
 					if (anal_channel == 1){
 						radius_line = "RADIUS = float("+ patch_radius +")\n";
 						thresh_line = "THRESHOLD = float("+ patch_thresh +")\n";
@@ -93,7 +102,7 @@ for (d=0;d<subdir.length;d++){
 					//waitForUser('string');
 
 					python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
-					eval("python",python_prefix + script);
+					eval("python",python_prefix + py_as_string);
 
 					repeat_python = j;
 					n_repeats = 0;
@@ -142,7 +151,7 @@ for (d=0;d<subdir.length;d++){
 								print("[My Window]", "repeat python ("+n_repeats+") with threshold: "+new_thresh);
 								thresh_line = "THRESHOLD = float("+ new_thresh +")\n";
 								python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
-								eval("python",python_prefix + script);
+								eval("python",python_prefix + py_as_string);
 							}
 						}
 					}
