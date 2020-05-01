@@ -3,10 +3,13 @@
  * save general log (MyWindow) after each file
  * rename MyWindow log window
  * create python code to collect CSV data
+ * create and annotate parameters to choose which channels to analyze and which folder (number) to start at
+ * fix channel naming
+ * make 2Xloop rather than copy/paste the patch/cell stuff 
  */
 
 
-
+// patch part not used
 patch_radius	= 2.5;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
 patch_thresh	= 500;
 patch_linkdist	= 6;
