@@ -6,10 +6,16 @@
  * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
  * X fix channel naming (this was not a naming issue, but an issue of chossing correct channel)
  * make 2Xloop rather than copy/paste the patch/cell stuff 
+ * output to folder with current start time (rather than overwrite results)
  */
 
 
-// patch part not used
+start_index = 1;	// folder number to start with
+analysis_channels = newArray(1);
+analysis_channels[0]=2;	// which channels to analyze
+
+
+// patch part not used currently
 patch_radius	= 2.5;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
 patch_thresh	= 500;
 patch_linkdist	= 6;
@@ -18,9 +24,7 @@ cell_radius		= 100;	// pixels. note that in manual trackmate settings it asks fo
 cell_thresh		= 0.5;
 cell_linkdist	= 15;
 
-start_index = 1;	// folder number to start with
-analysis_channels = newArray(1);
-analysis_channels[0]=2;
+
 
 // used for CURR_TIME function
 P="P";
@@ -38,8 +42,9 @@ py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
 py_as_string = File.openAsString(py_src);
 
 macrostart = getTime();
+start_time = CURR_TIME("",R);
 
-progress_log = "Progress_Log";
+progress_log = "[Progress_Log_"+start_time+".txt]";
 
 // make sure any open windows, logs, etc are closed/cleared before starting
 print ("\\Clear");
@@ -66,7 +71,7 @@ if (!isOpen(progress_log_short)){
 for (d=start_index-1; d<subdir.length; d++){
 	dir = data_basedir+subdir[d];
 //	print(subdir[d]);
-	if (File.isDirectory(dir) && !startsWith(subdir[d],"_") && d != out){
+	if (File.isDirectory(dir) && !startsWith(subdir[d],"_")){
 	//if (File.isDirectory(dir)){
 		list = getFileList(dir);
 
@@ -114,12 +119,11 @@ for (d=start_index-1; d<subdir.length; d++){
 					//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
 					savename_line = "savename = r'"+xml_out+start_index+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
 					//print(savename_line);
-					//waitForUser('string');
-
-					python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
+					//waitForUser("string");
+					python_prefix = slinkdist_line + thresh_line + radius_line + channel_line + savename_line;
 					eval("python",python_prefix + py_as_string);
 
-					repeat_python = j;
+					repeat_python = 1;
 					n_repeats = 0;
 					new_thresh = cell_thresh;
 					been_too_low = 0;
@@ -139,7 +143,7 @@ for (d=start_index-1; d<subdir.length; d++){
 									new_thresh = new_thresh*2;
 								}
 								n_repeats++;
-								print("more than one track. threshold =",new_thresh);
+								print("more than one track. new threshold =",new_thresh);
 								for (q = 0; q < 3; q++) {
 									if(isOpen(statsWindows[q])){
 										selectWindow(statsWindows[q]);
@@ -205,7 +209,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				}
 				print(progress_log, IJ.freeMemory());
 				selectWindow(progress_log_short);
-				saveAs("Text", log_out+"_ProgressLog"+CURR_TIME("",R)+".txt");
+				saveAs("Text", log_out+progress_log_short);
 			}
 		}
 	}
