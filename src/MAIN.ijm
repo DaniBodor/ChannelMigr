@@ -1,9 +1,9 @@
 /*TO DO:
- * output data to correct folders
+ * X output data to correct folders
  * save general log (MyWindow) after each file
- * rename MyWindow log window
+ * X rename MyWindow log window
  * create python code to collect CSV data
- * create and annotate parameters to choose which channels to analyze and which folder (number) to start at
+ * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
  * fix channel naming
  * make 2Xloop rather than copy/paste the patch/cell stuff 
  */
@@ -18,18 +18,24 @@ cell_radius		= 100;	// pixels. note that in manual trackmate settings it asks fo
 cell_thresh		= 0.5;
 cell_linkdist	= 15;
 
+start_index = 1;	// folder number to start with
 analysis_channels = newArray(2);
 
 
-basedir = getDirectory("");
-subdir = getFileList(basedir);
-out = basedir+"TrackMate_Analysis"+File.separator;
-File.makeDirectory(out);
+data_basedir = getDirectory("");
+subdir = getFileList(data_basedir);
 
-py = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\src\\TrackMate_ChannelMigr.py";
-py_as_string = File.openAsString(basedir+py);
+current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;
+xml_out = current_dir + "output\\XMLs" + File.separator;
+csv_out = current_dir + "output\\CSVs" + File.separator;
+log_out = current_dir + "output\\LOGs" + File.separator;
+
+py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
+py_as_string = File.openAsString(py_src);
 
 macrostart = getTime();
+
+progress_log = "Progress_Log";
 
 // make sure any open windows, logs, etc are closed/cleared before starting
 print ("\\Clear");
@@ -42,17 +48,19 @@ for (i = 0; i < statsWindows.length; i++) {
 		run("Close");
 	}
 }
-if (!isOpen("My Window")){
-	run("New... ", "name=[My Window] type=Table");
+
+progress_log_short=substring(progress_log, 1, lengthOf(progress_log)-1);
+if (!isOpen(progress_log_short)){
+	run("New... ", "name="+progress_log+" type=Table");
 	waitForUser("organize log windows");
 } else{
-	print("[My Window]","\\Clear");
+	print(progress_log,"\\Clear");
 }
 
 
-// loop through subfolders in basedir and create output folder
-for (d=0;d<subdir.length;d++){
-	dir = basedir+subdir[d];
+// loop through subfolders in data_basedir and create output folder
+for (d=start_index-1; d<subdir.length; d++){
+	dir = data_basedir+subdir[d];
 //	print(subdir[d]);
 	if (File.isDirectory(dir) && !startsWith(subdir[d],"_") && d != out){
 	//if (File.isDirectory(dir)){
@@ -65,7 +73,7 @@ for (d=0;d<subdir.length;d++){
 				// open files
 				open(dir+list[i]);
 				A=getTitle();
-				print("[My Window]", d2s(d+8,0)+"_"+list[i]);
+				print(progress_log, start_index+"_"+list[i]);
 
 				// print pixel settings
 				print("\\Clear");	//this print is kinda dumb
@@ -100,7 +108,7 @@ for (d=0;d<subdir.length;d++){
 					}
 					channel_line = "TARGET_CHANNEL = " + anal_channel + "\n";
 					//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
-					savename_line = "savename = r'"+out+d2s(d+8,0)+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
+					savename_line = "savename = r'"+xml_out+start_index+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
 					//print(savename_line);
 					//waitForUser('string');
 
@@ -136,7 +144,7 @@ for (d=0;d<subdir.length;d++){
 								}
 							} else if (nTracks == 0){
 								n_repeats+=5;
-								print("[My Window]", "track duration too short");
+								print(progress_log, "track duration too short");
 							}
 						} else{
 							new_thresh = new_thresh/2;
@@ -148,10 +156,10 @@ for (d=0;d<subdir.length;d++){
 						if (repeat_python == 1){
 							if (n_repeats>5) {
 								repeat_python = 0;
-								print("[My Window]", "TrackMate unsuccesful on channel 2");
-								//print("[My Window]", "last attempted threshold is: "+new_thresh);
+								print(progress_log, "TrackMate unsuccesful on channel 2");
+								//print(progress_log, "last attempted threshold is: "+new_thresh);
 							} else{
-								print("[My Window]", "repeat python ("+n_repeats+") with threshold: "+new_thresh);
+								print(progress_log, "repeat python ("+n_repeats+") with threshold: "+new_thresh);
 								thresh_line = "THRESHOLD = float("+ new_thresh +")\n";
 								python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
 								eval("python",python_prefix + py_as_string);
@@ -168,7 +176,7 @@ for (d=0;d<subdir.length;d++){
 					if (isOpen("Spots in tracks statistics")){
 						selectWindow("Spots in tracks statistics");
 						nSpots = getValue("results.count");
-						saveAs("Results", out+d2s(d+8,0)+"_"+data+"_SpotsStats.csv");
+						saveAs("Results", csv_out+start_index+"_"+data+"_SpotsStats.csv");
 						run("Close");
 						selectWindow("Track statistics");
 						nTracks = getValue("results.count");
@@ -180,18 +188,18 @@ for (d=0;d<subdir.length;d++){
 						print("Tracks:",nTracks,"\nLinks:",nLinks,"\nSpots in tracks:",nSpots);
 					} else if (j==0){
 						print("========================\n========================\nno tracks were found\n========================\n========================");
-						print("[My Window]", "no patch-tracks were detected");
+						print(progress_log, "no patch-tracks were detected");
 					}
 				}
 				
 				selectWindow("Log");
-				saveAs("Text", out+d2s(d+8, 0)+"_"+list[i]+"_Log.txt");
+				saveAs("Text", log_out+start_index+"_"+list[i]+"_Log.txt");
 				close();
-				print("[My Window]", IJ.freeMemory());
+				print(progress_log, IJ.freeMemory());
 				for (q = 0; q < 10; q++) {
 					run("Collect Garbage");
 				}
-				print("[My Window]", IJ.freeMemory());
+				print(progress_log, IJ.freeMemory());
 			}
 		}
 	}
