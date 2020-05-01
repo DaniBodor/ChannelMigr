@@ -11,7 +11,6 @@
  * create IJM code to generate registration videos based on CSV data
 */
 
-
 current_dir = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
 start_index = 1;	// folder number to start with
 analysis_channels = newArray(1);
@@ -34,10 +33,10 @@ P="P";
 R="R";
 
 data_basedir = getDirectory("");
+dirname = File.getName(data_basedir)
 subdir = getFileList(data_basedir);
 
-current_dir = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds"+File.separator;
-general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+File.separator;
+general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+"_"+dirname+File.separator;
 File.makeDirectory(general_outdir);
 
 xml_out = general_outdir + "XMLs" + File.separator;
