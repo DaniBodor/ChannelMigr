@@ -1,5 +1,5 @@
 current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
-start_index = 1;	// folder number to start with
+start_index = 16;	// folder number to start with
 anal_channel = 2;	// which channels to analyze
 
 // TrackMate parameters passed to Python 
@@ -140,7 +140,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					if (repeat_python == 1){
 						if (n_repeats>5) {
 							repeat_python = 0;
-							print(progress_log, "TrackMate unsuccesful on");
+							print(progress_log, "TrackMate unsuccesful on" + list[i]);
 						} else{
 							print(progress_log, "repeat python ("+n_repeats+") with threshold: "+new_thresh);
 							thresh_line = "THRESHOLD = float("+ new_thresh +")\n";
@@ -169,7 +169,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					nLinks = getValue("results.count");
 					run("Close");
 					print("Tracks:",nTracks,"\nLinks:",nLinks,"\nSpots in tracks:",nSpots);
-				} else if (j==0){
+				} else {
 					print("========================\n========================\nno tracks were found\n========================\n========================");
 					print(progress_log, "no tracks were detected");
 				}
