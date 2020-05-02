@@ -11,7 +11,7 @@
  * create IJM code to generate registration videos based on CSV data
 */
 
-current_dir = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
+current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
 start_index = 1;	// folder number to start with
 analysis_channels = newArray(1);
 analysis_channels[0]=2;	// which channels to analyze
@@ -23,7 +23,7 @@ patch_thresh	= 500;
 patch_linkdist	= 6;
 
 cell_radius		= 100;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
-cell_thresh		= 0.5;
+cell_thresh		= 0.25;
 cell_linkdist	= 15;
 
 
@@ -47,7 +47,7 @@ log_out = general_outdir + "LOGs" + File.separator;
 File.makeDirectory(log_out);
 
 
-py_src = current_dir + "src/TrackMate_ChannelMigr.py";
+py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
 py_as_string = File.openAsString(py_src);
 
 macrostart = getTime();
@@ -106,7 +106,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				
 				for (j=0;j<analysis_channels.length;j++){
 					anal_channel = analysis_channels[j];
-					data = list[i] + " ---Channel" + anal_channel;
+					data = list[i] + "---Channel" + anal_channel;
 					Stack.setChannel(anal_channel);
 					Stack.setDisplayMode("grayscale");
 					before=getTime();
@@ -139,6 +139,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					been_too_high = 0;
 
 					while (repeat_python == 1){
+						waitForUser("test");
 						if (isOpen("Track statistics")){
 							selectWindow("Track statistics");
 							nTracks = getValue("results.count");
@@ -173,7 +174,7 @@ for (d=start_index-1; d<subdir.length; d++){
 						if (repeat_python == 1){
 							if (n_repeats>5) {
 								repeat_python = 0;
-								print(progress_log, "TrackMate unsuccesful on channel 2");
+								print(progress_log, "TrackMate unsuccesful on");
 								//print(progress_log, "last attempted threshold is: "+new_thresh);
 							} else{
 								print(progress_log, "repeat python ("+n_repeats+") with threshold: "+new_thresh);
@@ -205,7 +206,7 @@ for (d=start_index-1; d<subdir.length; d++){
 						print("Tracks:",nTracks,"\nLinks:",nLinks,"\nSpots in tracks:",nSpots);
 					} else if (j==0){
 						print("========================\n========================\nno tracks were found\n========================\n========================");
-						print(progress_log, "no patch-tracks were detected");
+						print(progress_log, "no tracks were detected");
 					}
 				}
 				
