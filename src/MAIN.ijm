@@ -39,8 +39,8 @@ subdir = getFileList(data_basedir);
 general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+"_"+dirname+File.separator;
 File.makeDirectory(general_outdir);
 
-xml_out = general_outdir + "XMLs" + File.separator;
-File.makeDirectory(xml_out);
+//xml_out = general_outdir + "XMLs" + File.separator;
+//File.makeDirectory(xml_out);
 csv_out = general_outdir + "CSVs" + File.separator;
 File.makeDirectory(csv_out);
 log_out = general_outdir + "LOGs" + File.separator;
@@ -126,10 +126,10 @@ for (d=start_index-1; d<subdir.length; d++){
 					}
 					channel_line = "TARGET_CHANNEL = " + anal_channel + "\n";
 					//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
-					savename_line = "savename = r'"+xml_out+d+1+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
+					//savename_line = "savename = r'"+xml_out+d+1+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
 					//print(savename_line);
 					//waitForUser("string");
-					python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
+					python_prefix = linkdist_line + thresh_line + radius_line + channel_line;// + savename_line;
 					eval("python",python_prefix + py_as_string);
 
 					repeat_python = 1;
@@ -139,7 +139,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					been_too_high = 0;
 
 					while (repeat_python == 1){
-						waitForUser("test");
+//						waitForUser("test");
 						if (isOpen("Track statistics")){
 							selectWindow("Track statistics");
 							nTracks = getValue("results.count");
@@ -179,7 +179,7 @@ for (d=start_index-1; d<subdir.length; d++){
 							} else{
 								print(progress_log, "repeat python ("+n_repeats+") with threshold: "+new_thresh);
 								thresh_line = "THRESHOLD = float("+ new_thresh +")\n";
-								python_prefix = linkdist_line + thresh_line + radius_line + channel_line + savename_line;
+								python_prefix = linkdist_line + thresh_line + radius_line + channel_line;// + savename_line;
 								eval("python",python_prefix + py_as_string);
 							}
 						}
@@ -230,7 +230,7 @@ CURR_TIME("finished",P);
 macrofinish = getTime();
 duration = round((macrofinish-macrostart)/1000);
 print("\n############\nMACRO IS FINISHED!\ntotal duration: "+duration+" seconds\n############\n");
-
+print(progress_log,"\n############\nMACRO IS FINISHED!\ntotal duration: "+duration+" seconds\n############\n");
 
 
 

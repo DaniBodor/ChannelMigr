@@ -162,7 +162,7 @@ model.getLogger().log(str(model))
 
 # Export stats to results table
 ### UNDER CONSTRUCTION
-ExportStatsToIJAction().execute(trackmate)
+ExportStatsToIJAction(selectionModel).execute(trackmate)
 
 
 
@@ -178,8 +178,8 @@ IJ.log("")
 
 
 #### Save XML file
-IJ.log("save XML file as: "+savename)
-outfile = TmXmlWriter(File(savename))
+#IJ.log("save XML file as: "+savename)
+#outfile = TmXmlWriter(File(savename))
 outfile.appendModel(model)
 outfile.writeToFile()
 
