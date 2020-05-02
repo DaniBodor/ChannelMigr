@@ -1,31 +1,16 @@
-/*TO DO:
- * X output data to correct folders
- * X save progress log regularly
- * X rename MyWindow log window
- * X create and annotate parameters to choose which channels to analyze and which folder (number) to start at = startindex
- * X fix channel naming (this was not a naming issue, but an issue of chossing correct channel)
- * make 2Xloop rather than copy/paste the patch/cell stuff 
- * X create output folder rather than have generic ones (to distinguish between experiments)
- * X fix having many progress log windows open
- * create python code to collect CSV data
- * create IJM code to generate registration videos based on CSV data
-*/
-
 current_dir = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds"+File.separator;	// directory where the code is stored (above '/src')
 start_index = 1;	// folder number to start with
 anal_channel = 2;	// which channels to analyze
 
-// patch part not used currently
-patch_radius	= 2.5;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
-patch_thresh	= 500;
-patch_linkdist	= 6;
-
+// TrackMate parameters passed to Python 
 cell_radius		= 100;	// pixels. note that in manual trackmate settings it asks for diameter rather than radius
 cell_thresh		= 0.25;
 cell_linkdist	= 15;
 
 
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // used for CURR_TIME function
 P="P";
 R="R";
@@ -37,6 +22,7 @@ subdir = getFileList(data_basedir);
 out = current_dir + "output" + File.separator + CURR_TIME("",R)+"_"+dirname+File.separator;
 File.makeDirectory(out);
 
+// currently saving everything to single out folder
 /*
 //xml_out = out + "XMLs" + File.separator;
 //File.makeDirectory(xml_out);
@@ -78,14 +64,11 @@ if (!isOpen(progress_log_short)){
 // loop through subfolders in data_basedir and create output folder
 for (d=start_index-1; d<subdir.length; d++){
 	dir = data_basedir+subdir[d];
-//	print(subdir[d]);
 	if (File.isDirectory(dir) && !startsWith(subdir[d],"_")){
-	//if (File.isDirectory(dir)){
 		list = getFileList(dir);
 
 		// loop through files inside subfolder
 		for(i=0;i<list.length;i++){
-			print(list[i]);		//this print is kinda dumb because it gets cleared almost immediately
 			if (endsWith(list[i],".nd2") && !startsWith(list[i],"_")) {
 				// open files
 				CURR_TIME("opening file: "+list[i],P);
@@ -95,7 +78,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				print(progress_log, d+1+"_"+list[i]);
 
 				// print pixel settings
-				print("\\Clear");	//this print is kinda dumb
+				print("\\Clear");
 				getPixelSize(unit, pixelWidth, pixelHeight);
 				interval = Stack.getFrameInterval();
 				print("Pixel size is (" + pixelWidth + " x " + pixelHeight + ") " + unit);
@@ -112,8 +95,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				thresh_line = "THRESHOLD = float("+ cell_thresh +")\n";
 				linkdist_line = "LINKING_MAX_DISTANCE = float("+ cell_linkdist +")\n"	;			
 				channel_line = "TARGET_CHANNEL = " + anal_channel + "\n";
-				//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
-				//savename_line = "savename = r'"+out+d+1+"_"+list[i]+"_TM.xml'\n";		//raw string passed (I hope)
+				//savename_line = "savename = r'"+out+d+1+"_"+list[i]+"_TM.xml'\n";		// not saving XMLs any more
 				python_prefix = linkdist_line + thresh_line + radius_line + channel_line;// + savename_line;
 				eval("python",python_prefix + py_as_string);
 
@@ -159,7 +141,6 @@ for (d=start_index-1; d<subdir.length; d++){
 						if (n_repeats>5) {
 							repeat_python = 0;
 							print(progress_log, "TrackMate unsuccesful on");
-							//print(progress_log, "last attempted threshold is: "+new_thresh);
 						} else{
 							print(progress_log, "repeat python ("+n_repeats+") with threshold: "+new_thresh);
 							thresh_line = "THRESHOLD = float("+ new_thresh +")\n";
@@ -173,7 +154,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				duration = round((after-before)/1000);
 				CURR_TIME ("Trackmate finished ("+duration+" s)",P);
 	
-				//save track and spots statistics
+				//save spots statistics
 
 				if (isOpen("Spots in tracks statistics")){
 					selectWindow("Spots in tracks statistics");
@@ -182,8 +163,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					run("Close");
 					selectWindow("Track statistics");
 					nTracks = getValue("results.count");
-			waitForUser("vkldhgd");
-					//saveAs("Results", out+list[i]+"TrackStats.csv");		//for some reason this window comes out empty...
+					// not saving trackstats, because I want only the X-displacement, which isn't listed there
 					run("Close");
 					selectWindow("Links in tracks statistics");
 					nLinks = getValue("results.count");
