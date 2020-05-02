@@ -36,16 +36,17 @@ data_basedir = getDirectory("");
 dirname = File.getName(data_basedir)
 subdir = getFileList(data_basedir);
 
-general_outdir = current_dir + "output" + File.separator + CURR_TIME("",R)+"_"+dirname+File.separator;
-File.makeDirectory(general_outdir);
+out = current_dir + "output" + File.separator + CURR_TIME("",R)+"_"+dirname+File.separator;
+File.makeDirectory(out);
 
-//xml_out = general_outdir + "XMLs" + File.separator;
+/*
+//xml_out = out + "XMLs" + File.separator;
 //File.makeDirectory(xml_out);
-csv_out = general_outdir + "CSVs" + File.separator;
+csv_out = out + "CSVs" + File.separator;
 File.makeDirectory(csv_out);
-log_out = general_outdir + "LOGs" + File.separator;
+log_out = out + "LOGs" + File.separator;
 File.makeDirectory(log_out);
-
+*/
 
 py_src = current_dir + "src\\TrackMate_ChannelMigr.py";
 py_as_string = File.openAsString(py_src);
@@ -53,7 +54,7 @@ py_as_string = File.openAsString(py_src);
 macrostart = getTime();
 start_time = CURR_TIME("",R);
 
-progress_log = "[Progress_Log.txt]";
+progress_log = "[_Progress_Log.txt]";
 
 // make sure any open windows, logs, etc are closed/cleared before starting
 print ("\\Clear");
@@ -126,7 +127,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					}
 					channel_line = "TARGET_CHANNEL = " + anal_channel + "\n";
 					//pydirname = substring(dir,0,lengthOf(dir)-1)+File.separator;
-					//savename_line = "savename = r'"+xml_out+d+1+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
+					//savename_line = "savename = r'"+out+d+1+"_"+data+"_TM.xml'\n";		//raw string passed (I hope)
 					//print(savename_line);
 					//waitForUser("string");
 					python_prefix = linkdist_line + thresh_line + radius_line + channel_line;// + savename_line;
@@ -194,7 +195,7 @@ for (d=start_index-1; d<subdir.length; d++){
 					if (isOpen("Spots in tracks statistics")){
 						selectWindow("Spots in tracks statistics");
 						nSpots = getValue("results.count");
-						saveAs("Results", csv_out+d+1+"_"+data+"_SpotsStats.csv");
+						saveAs("Results", out+d+1+"_"+data+"_SpotsStats.csv");
 						run("Close");
 						selectWindow("Track statistics");
 						nTracks = getValue("results.count");
@@ -211,7 +212,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				}
 				
 				selectWindow("Log");
-				saveAs("Text", log_out+d+1+"_"+list[i]+"_Log.txt");
+				saveAs("Text", out+d+1+"_"+list[i]+"_Log.txt");
 				close();
 				print(progress_log, IJ.freeMemory());
 				for (q = 0; q < 10; q++) {
@@ -219,7 +220,7 @@ for (d=start_index-1; d<subdir.length; d++){
 				}
 				print(progress_log, IJ.freeMemory());
 				selectWindow(progress_log_short);
-				saveAs("Text", log_out+progress_log_short);
+				saveAs("Text", out+progress_log_short);
 			}
 		}
 	}
