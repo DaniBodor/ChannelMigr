@@ -1,18 +1,16 @@
 
 rectHeight = 120;
 
-input_csv = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.csv";
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
 data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
 
-//print(lines[1]);
 
 basedir = getDirectory("Choose a Directory");
 dlist = getFileList(basedir);
 
 for (c = 1; c < lines.length; c++) {
-//for (c = 3; c < 4; c++) {
+//for (c = 3; c < 4; c++) {		// for testing purposes
 	cell_data = split(lines[c],"\t");
 	//cell_data [0] : dataframe index
 	//cell_data [1] : exp#
@@ -28,12 +26,6 @@ for (c = 1; c < lines.length; c++) {
 	if (File.exists(path + cell_data [2] + ".timecrop.tif"))	image_path = path + cell_data [2] + ".timecrop.tif";
 	else														image_path = path + cell_data [2] + ".nd2";
 
-/*	print(dlist[9]);
-	print(path);
-	print(cell_data [2]);
-	print(image_path);
-	fjkgsd
-*/
 	RegData = split(substring(cell_data[5],2,lengthOf(cell_data[5])-2),", ");
 	savename = cell_data[1] + "_" + cell_data[2] + ".tif";
 	
