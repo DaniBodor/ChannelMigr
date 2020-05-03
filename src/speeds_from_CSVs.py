@@ -28,10 +28,10 @@ current = parent + r'output/' +  analysis_folder
 
 
 neg_migrators = ['MM_F_00_2_019', 'CM_B_GB_1_008', '190319_CM_B_GX_3_009']
-directions = ['right','left']
+directions = ['left','right']
 
 
-columns = ['exp#','cell_name','velocity','speed','t0','points','direction','time_gap','filename','TimeReg','Y_mean']
+columns = ['exp#','cell_name','velocity','speed','t0','points','Y_mean','direction','time_gap','filename','TimeReg']
 outdf = pd.DataFrame(columns=columns)
 import_columns = ['POSITION_X','POSITION_Y','POSITION_T','FRAME']
 
@@ -94,9 +94,9 @@ for file in CSV_list:
             # Get mean Y_pos
             Ymean = int(round(data.POSITION_Y.mean()))
     
-            outdf.loc[len(outdf)] = [exp_no,cell_name,speed,displ_speed,t0,len(data),direction,nonlin,file,TimeReg,Ymean]
+            outdf.loc[len(outdf)] = [exp_no,cell_name,speed,displ_speed,t0,len(data),Ymean,direction,nonlin,file,TimeReg]
     
-export_columns = [columns[i] for i in (1,-1,-2)]    
-outdf.to_csv(current + '_Reg_Data.csv', columns = export_columns)
+export_columns = ['exp#','cell_name','Y_mean','direction','TimeReg']
+outdf[export_columns].to_csv(current + '_Reg_Data.csv')
             
 print('ready')
