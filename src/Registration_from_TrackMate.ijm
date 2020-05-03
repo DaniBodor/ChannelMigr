@@ -21,7 +21,7 @@ for (c = 1; c < lines.length; c++) {
 	//cell_data [4] : direction
 	//cell_data [5] : Registration data (poorly formatted)
 
-	print(c, cell_data [2]);
+	print(c,cell_data[1], cell_data [2]);
 
 	folder = dlist[cell_data[1]-1];
 	path = basedir + File.separator + folder + File.separator;
@@ -42,11 +42,7 @@ for (c = 1; c < lines.length; c++) {
 
 	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
 
-	
-
-
 	saveAs("Tiff", "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/output/200502190132_ChannelMigration/" + savename);
-
 	run("Close All");
 }
 
