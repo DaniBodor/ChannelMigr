@@ -28,7 +28,7 @@ neg_migrators = ['MM_F_00_2_019', 'CM_B_GB_1_008', '190319_CM_B_GX_3_009']
 directions = ['right','left']
 #subdirs = os.listdir(current)
 
-columns = ['exp#','cell#','velocity','speed','t0','points','direction','time_gap','filename']
+columns = ['exp#','cell_name','velocity','speed','t0','points','direction','time_gap','filename','TimeReg']
 outdf = pd.DataFrame(columns=columns)
 import_columns = ['POSITION_X','POSITION_Y','POSITION_T','FRAME']
 
@@ -71,15 +71,17 @@ for file in CSV_list:
             direction = directions[1-swapdir]
         else:
             direction = directions[0+swapdir]
-        
-            
-        
+
+        # Check if there are missing or duplicate timepoints        
         if tot_time != len(data)-1:
             nonlin = '*****'
         else:
             nonlin=''
+        
+        # Make list of registration points
+        TimeReg = [int(round(x-data.POSITION_X.iloc[0])) for x in data.POSITION_X]
 
-        outdf.loc[len(outdf)] = [exp_no,number,speed,displ_speed,t0,len(data),direction,nonlin,file]
+        outdf.loc[len(outdf)] = [exp_no,number,speed,displ_speed,t0,len(data),direction,nonlin,file,TimeReg]
     
     
             
