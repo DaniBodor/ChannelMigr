@@ -23,9 +23,12 @@ analysis_folder = '200502190132_ChannelMigration'
 #print(current)
 current = r'C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/output/' +  analysis_folder
 
+
+neg_migrators = ['MM_F_00_2_019', 'CM_B_GB_1_008', '190319_CM_B_GX_3_009']
+directions = ['right','left']
 #subdirs = os.listdir(current)
 
-columns = ['exp#','cell#','speed','*speed*','t0','points','time_gap','filename']
+columns = ['exp#','cell#','velocity','speed','t0','points','direction','time_gap','filename']
 outdf = pd.DataFrame(columns=columns)
 import_columns = ['POSITION_X','POSITION_Y','POSITION_T','FRAME']
 
@@ -45,9 +48,9 @@ for file in CSV_list:
 
         t0 = data.FRAME[0]
         
-        distance = abs(data.POSITION_X.iloc[-1] - data.POSITION_X.iloc[0])
+        distance = data.POSITION_X.iloc[-1] - data.POSITION_X.iloc[0]
         tot_time = data.FRAME.iloc[-1] - data.FRAME[0]
-        speed = distance / tot_time * unit_conversion
+        speed = abs(distance) / tot_time * unit_conversion
         
         exp_no = file[:file.index('_')]
 #        prefix = '{}_{}_{}_{}'.format(file[:9],file[9],file[10:12],file[12])
@@ -60,12 +63,23 @@ for file in CSV_list:
                 displ += abs(data.POSITION_X[i]-data.POSITION_X[i-1])
         displ_speed = displ / tot_time * unit_conversion
         
+        # set direction of migration (pos to right, neg to left)
+        swap_dir = 0
+        if file in neg_migrators:
+            swapdir = 1
+        if distance<0:
+            direction = directions[1-swapdir]
+        else:
+            direction = directions[0+swapdir]
+        
+            
+        
         if tot_time != len(data)-1:
             nonlin = '*****'
         else:
             nonlin=''
 
-        outdf.loc[len(outdf)] = [exp_no,number,speed,displ_speed,t0,len(data),nonlin,file]
+        outdf.loc[len(outdf)] = [exp_no,number,speed,displ_speed,t0,len(data),direction,nonlin,file]
     
     
             
