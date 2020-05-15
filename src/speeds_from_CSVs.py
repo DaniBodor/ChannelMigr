@@ -97,6 +97,6 @@ for file in CSV_list:
             outdf.loc[len(outdf)] = [exp_no,cell_name,speed,displ_speed,t0,len(data),Ymean,direction,nonlin,file,TimeReg]
     
 export_columns = ['exp#','cell_name','Y_mean','direction','TimeReg']
-outdf[export_columns].to_csv(current + '_Reg_Data.csv')
+#outdf[export_columns].to_csv(current + '_Reg_Data.csv')
             
 print('ready')
