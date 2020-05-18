@@ -6,21 +6,57 @@ minArea = 500;
 
 //selectImage(1);
 //close("\\Others");
-dir = getDirectory("Choose a Directory");
-dlist = getFileList(dir);
-out = 
+basedir = getDirectory("Choose a Directory");
+dlist = getFileList(basedir);
+out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration";
 
-for (d = 0; d < dlist.length; d++) {
+input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
+data_string = File.openAsString(input_txt);
+lines = split(data_string,"\n");
 
-run("Select None");
 
-ori = getTitle();
+for (c = 1; c < lines.length; c++) {
+//for (c = 3; c < 4; c++) {		// for testing purposes
+	cell_data = split(lines[c],"\t");
+	//cell_data [0] : dataframe index
+	//cell_data [1] : exp#
+	//cell_data [2] : cell name
+	//cell_data [3] : Y_mean
+	//cell_data [4] : direction
+	//cell_data [5] : TrackMate registration data (not used!)
 
-run("Duplicate...", "duplicate channels=2");
-Ch2 = getTitle();
-Stack.setXUnit("px");
-run("Properties...", "pixel_width=1 pixel_height=1");
-run("Grays");
+	print(c,cell_data[1], cell_data [2]);
+
+	folder = dlist[cell_data[1]-1];
+	path = basedir + File.separator + folder + File.separator;
+	if (File.exists(path + cell_data [2] + ".timecrop.tif"))	image_path = path + cell_data [2] + ".timecrop.tif";
+	else														image_path = path + cell_data [2] + ".nd2";
+
+	savename = cell_data[1] + "_" + cell_data[2] + ".tif";
+	open(image_path);
+	ori = getTitle();
+	run("Select None");
+
+	run("Duplicate...", "duplicate channels=2");
+	Ch2 = getTitle();
+	Stack.setXUnit("px");
+	run("Properties...", "pixel_width=1 pixel_height=1");
+	run("Grays");
+	RegData = findCentroids;
+
+	selectImage(ori);
+	Register_Movie(cell_data [3], RegData);
+	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
+
+
+	saveAs("Tiff", "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/output/200502190132_ChannelMigration/" + savename);
+	run("Close All");
+}
+
+
+
+
+
 
 
 
@@ -48,14 +84,9 @@ function findCentroids(){
 	
 	Array.getStatistics(Ypos, _, _, Ymean, _);
 
-	output = Array.concat(Ymean,Xpos);
-	return output
+	output = Array.concat(Ymean,Xpos);	//currently unused, reading Ymean from trackmate
+	return Xpos
 }
-
-selectImage(Ch2);
-Register_Movie(Ymean,Xpos);
-
-
 
 
 function makeKymo(){
@@ -86,13 +117,13 @@ function Register_Movie(Y,Reg_positions){
 	Stack.setXUnit("px");
 	run("Properties...", "pixel_width=1 pixel_height=1");
 	
-	for (i = 0; i < Reg_positions.length; i++) {
-		displace = parseInt(Reg_positions[i]);
-		Stack.setFrame(i+1);
-		Stack.setChannel(1);
-		run("Translate...", "x="+displace*-1+" y=0 interpolation=None slice");
-		//Stack.setChannel(2);
-		//run("Translate...", "x="+displace*-1+" y=0 interpolation=None slice");
-	
+	for (t = 0; t < Reg_positions.length; t++) {
+		displace = -1 * parseInt(Reg_positions[t]);
+		Stack.setFrame(t+1);
+		
+		for (w = 0; w < nChannels; w++) {
+			Stack.setChannel(w+1);
+			run("Translate...", "x="+displace+" y=0 interpolation=None slice");
+		}	
 	}
 }	

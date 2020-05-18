@@ -41,20 +41,20 @@ for (c = 1; c < lines.length; c++) {
 
 
 
-function Register_Movie(Ymean,Reg_positions){
-	makeRectangle(0, Ymean-rectHeight/2, getWidth(), rectHeight);
+function Register_Movie(Y,Reg_positions){
+	makeRectangle(0, Y-rectHeight/2, getWidth(), rectHeight);
 	run("Duplicate...", "duplicate channels=1-2");
 	dupl = getTitle();
 	Stack.setXUnit("px");
 	run("Properties...", "pixel_width=1 pixel_height=1");
 	
-	for (i = 0; i < Reg_positions.length; i++) {
-		displace = parseInt(Reg_positions[i]);
-		Stack.setFrame(i+1);
-		Stack.setChannel(1);
-		run("Translate...", "x="+displace*-1+" y=0 interpolation=None slice");
-		Stack.setChannel(2);
-		run("Translate...", "x="+displace*-1+" y=0 interpolation=None slice");
-	
+	for (t = 0; t < Reg_positions.length; t++) {
+		displace = -1 * parseInt(Reg_positions[t]);
+		Stack.setFrame(t+1);
+		
+		for (w = 0; w < nChannels; w++) {
+			Stack.setChannel(w+1);
+			run("Translate...", "x="+displace+" y=0 interpolation=None slice");
+		}	
 	}
 }	
