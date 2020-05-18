@@ -77,7 +77,7 @@ for file in CSV_list:
             swapdir = 0
             if file in neg_migrators:
                 swapdir = 1
-            if distance<0:
+            if distance>0:
                 direction = directions[1-swapdir]
             else:
                 direction = directions[0+swapdir]

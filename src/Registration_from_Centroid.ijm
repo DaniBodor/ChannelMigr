@@ -50,6 +50,7 @@ for (c = 1; c < lines.length; c++) {
 	savename = cell_data[1] + "_" + cell_data[2] + ".tif";
 	open(image_path);
 	ori = getTitle();
+	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
 	run("Select None");
 
 	run("Duplicate...", "duplicate channels=2");
@@ -57,7 +58,6 @@ for (c = 1; c < lines.length; c++) {
 	Stack.setXUnit("px");
 	run("Properties...", "pixel_width=1 pixel_height=1");
 	run("Grays");
-	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
 	RegData = findCentroids();
 
 	selectImage(ori);
@@ -71,11 +71,15 @@ for (c = 1; c < lines.length; c++) {
 
 	selectImage(reg);
 	cropRegImage();
+
 	
 	if (quality_control == 1){
 		selectImage(reg);
-		makeKymo();
 		rename("Centroid");
+		reg=getTitle();
+		
+		makeKymo();
+		rename("Centroid_Kymo");
 		
 		selectImage(reg);
 		//roiManager("select", 1);
@@ -84,26 +88,32 @@ for (c = 1; c < lines.length; c++) {
 
 		open (TrackMateRegistrationFolder + savename);
 		rename("TrackMate");
-		makeKymo();
-		rename("TM");
-		selectImage("TrackMate");
 		roiManager("select", 1);
 		run("Crop");
+		makeKymo();
+		rename("TM_Kymo");
 		//roiManager("Show None");
+		selectImage("TrackMate");
 		doCommand("Start Animation [\\]");
 
+		close(ori);
+		close(Ch2);
 		run("Tile");
-		Dialog.create("Registration Type")
-		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
-		Dialog.show();
+//		selectImage(nImages);
+//		run("Set... ", "zoom=100");
+		Dialog.createNonBlocking(ori);
+			Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
+			Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
+			Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
+			Dialog.setLocation(200,400); 
+			Dialog.show();
 		use_reg = Dialog.getChoice();
 //		waitForUser("All OK?");
 	}
 
 	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
-	selectImage(reg);
-	saveAs("Tiff", out + savename);
+
 	run("Close All");
 }
 
@@ -138,6 +148,7 @@ function findCentroids(){
 	Array.getStatistics(Ypos, _, _, Ymean, _);
 
 	output = Array.concat(Ymean,Xpos);	//currently unused, reading Ymean from trackmate
+	close(blur);
 	return Xpos;
 }
 
@@ -147,6 +158,7 @@ function makeKymo(){
 	Ch2_reg = getTitle();
 	makeLine(0, getHeight()/2, getWidth(), getHeight()/2);
 	run("Multi Kymograph", "linewidth=1");
+	close(Ch2_reg);
 }
 
 function combineROIs(){
@@ -194,7 +206,7 @@ function concatPrint(array,end){
 
 
 function cropRegImage(){
-	ori = getTitle();
+	image = getTitle();
 	
 	run("Duplicate...", "duplicate channels="+2);
 	ch2_reg = getTitle();
@@ -204,8 +216,10 @@ function cropRegImage(){
 	setAutoThreshold(cropThresh + " dark");
 	combineROIs();
 	getBoundingRect(x, y, width, height);
-	selectImage(ori);
+	selectImage(image);
 	makeRectangle  (x-x_buffer, 0, width+x_buffer*2, getHeight());
 	roiManager("add");
 	run("Crop");
+	close(blurmax);
+	close(ch2_reg);
 }
