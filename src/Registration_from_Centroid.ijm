@@ -3,6 +3,12 @@ rectHeight = 120;
 minArea = 500;
 pixelsize = 0.1566487;
 interval = 1/15;
+blursigma = 2;
+x_buffer = 8;
+cropThresh = "Triangle";
+
+quality_control = 1;
+
 
 
 //selectImage(1);
@@ -60,7 +66,15 @@ for (c = 1; c < lines.length; c++) {
 	
 	outdata = newArray(c,cell_data[1], cell_data [2],folder,cell_data[3], cell_data [4],realspeed, time+1);
 	concatPrint(Array.concat(outdata,RegData),"\t");
-	makeKymo(2);
+
+	selectImage(reg);
+	cropRegImage();
+	
+	if (quality_control == 1){
+		selectImage(reg);
+		makeKymo();
+		waitForUser("All OK?");
+	}
 
 	selectImage(reg);
 	saveAs("Tiff", out + savename);
@@ -81,7 +95,7 @@ function findCentroids(){
 	
 	run("Duplicate...", "duplicate");
 	blur = getTitle();
-	run("Gaussian Blur...", "sigma=2 stack");
+	run("Gaussian Blur...", "sigma="+blursigma+" stack");
 	
 	for (i = 0; i < nSlices; i++) {	
 		setSlice(i+1);
@@ -89,7 +103,6 @@ function findCentroids(){
 		setAutoThreshold("Default dark");
 		
 		combineROIs();
-		roiManager("select", 0);
 		
 		if (i == 0)		X0 = getValue("X");
 		Xpos[i] = getValue("X")-X0;
@@ -103,14 +116,11 @@ function findCentroids(){
 }
 
 
-function makeKymo(channel){
-	Stack.setChannel(channel);
-	run("Duplicate...", "duplicate channels="+channel);
-	temp = getTitle();
+function makeKymo(){
+	run("Duplicate...", "duplicate channels="+2);
+	Ch2_reg = getTitle();
 	makeLine(0, getHeight()/2, getWidth(), getHeight()/2);
 	run("Multi Kymograph", "linewidth=1");
-	close(temp);
-	waitForUser("Kymo OK?");
 }
 
 function combineROIs(){
@@ -125,6 +135,7 @@ function combineROIs(){
 			roiManager("delete");
 		}
 	}
+	roiManager("select", 0);
 }
 
 
@@ -153,4 +164,22 @@ function concatPrint(array,end){
 		line = line + array[i] + end;
 	}
 	print(line); 
+}
+
+
+function cropRegImage(){
+	ori = getTitle();
+	
+	run("Duplicate...", "duplicate channels="+2);
+	ch2_reg = getTitle();
+	run("Z Project...", "projection=[Max Intensity]");
+	blurmax = getTitle();
+	run("Gaussian Blur...", "sigma="+blursigma+" stack");
+	setAutoThreshold(cropThresh + " dark");
+	combineROIs();
+	getBoundingRect(x, y, width, height);
+	selectImage(ori);
+	makeRectangle  (x-x_buffer, 0, width+x_buffer*2, getHeight());
+	roiManager("add");
+	run("Crop");
 }
