@@ -8,6 +8,7 @@ x_buffer = 8;
 cropThresh = "Triangle";
 
 quality_control = 1;
+Reg_Types = newArray("Centroid","TrackMate","Neither","Both","Unclear");
 
 
 
@@ -18,8 +19,10 @@ dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
 run("Close All");
 print("\\Clear");
-headers = newArray("index","exp#","folder","file","y","dir","speed","points","RegData");
+headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","points","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
+TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
+
 
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
 data_string = File.openAsString(input_txt);
@@ -64,8 +67,6 @@ for (c = 1; c < lines.length; c++) {
 	px_speed = RegData[time] / time;
 	realspeed = px_speed * pixelsize / interval;
 	
-	outdata = newArray(c,cell_data[1], cell_data [2],folder,cell_data[3], cell_data [4],realspeed, time+1);
-	concatPrint(Array.concat(outdata,RegData),"\t");
 
 	selectImage(reg);
 	cropRegImage();
@@ -73,9 +74,33 @@ for (c = 1; c < lines.length; c++) {
 	if (quality_control == 1){
 		selectImage(reg);
 		makeKymo();
-		waitForUser("All OK?");
+		rename("Centroid");
+		
+		selectImage(reg);
+		//roiManager("select", 1);
+		roiManager("Show None");
+		doCommand("Start Animation [\\]");
+
+		open (TrackMateRegistrationFolder + savename);
+		rename("TrackMate");
+		makeKymo();
+		rename("TM");
+		selectImage("TrackMate");
+		roiManager("select", 1);
+		run("Crop");
+		//roiManager("Show None");
+		doCommand("Start Animation [\\]");
+
+		run("Tile");
+		Dialog.create("Registration Type")
+		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
+		Dialog.show();
+		use_reg = Dialog.getChoice();
+//		waitForUser("All OK?");
 	}
 
+	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, time+1, cell_data[5]);	
+	concatPrint(Array.concat(outdata,RegData),"\t");
 	selectImage(reg);
 	saveAs("Tiff", out + savename);
 	run("Close All");
