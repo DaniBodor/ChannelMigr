@@ -1,7 +1,8 @@
 
 rectHeight = 120;
 minArea = 500;
-
+pixelsize = 0.1566487;
+interval = 1/15;
 
 
 //selectImage(1);
@@ -11,6 +12,8 @@ dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
 run("Close All");
 print("\\Clear");
+headers = newArray("index","exp#","folder","file","y","dir","speed","points","RegData");
+concatPrint(headers,"\t");
 
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
 data_string = File.openAsString(input_txt);
@@ -49,13 +52,18 @@ for (c = 1; c < lines.length; c++) {
 
 	selectImage(ori);
 	Register_Movie(cell_data [3], RegData);
+	reg = getTitle();
+	
+	time = RegData.length - 1;
+	px_speed = RegData[time] / time;
+	realspeed = px_speed * pixelsize / interval;
+	
+	outdata = newArray(c,cell_data[1], cell_data [2],folder,cell_data[3], cell_data [4],realspeed, time+1);
+	concatPrint(Array.concat(outdata,RegData),"\t");
 	makeKymo(2);
 
+	selectImage(reg);
 	saveAs("Tiff", out + savename);
-	print_array = Array.concat(newArray(c,cell_data[1], cell_data [2]),RegData);
-	concatPrint(print_array,"\t");
-
-	
 	run("Close All");
 }
 
@@ -98,7 +106,7 @@ function findCentroids(){
 function makeKymo(channel){
 	Stack.setChannel(channel);
 	run("Duplicate...", "duplicate channels="+channel);
-	temp = getTitle()
+	temp = getTitle();
 	makeLine(0, getHeight()/2, getWidth(), getHeight()/2);
 	run("Multi Kymograph", "linewidth=1");
 	close(temp);
@@ -144,5 +152,5 @@ function concatPrint(array,end){
 	for (i = 0; i < array.length; i++) {
 		line = line + array[i] + end;
 	}
-	print(Line); 
+	print(line); 
 }
