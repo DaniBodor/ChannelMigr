@@ -8,7 +8,7 @@ x_buffer = 8;
 cropThresh = "Triangle";
 
 quality_control = 1;
-Reg_Types = newArray("Centroid","TrackMate","Neither","Both","Unclear");
+Reg_Types = newArray("Centroid","TrackMate","MultiStackReg","None","Unclear");
 
 
 
@@ -22,7 +22,8 @@ print("\\Clear");
 headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","points","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
-
+//MSR_Folder = "D:\\LMCB\\ChannelMigration\\_MultiStackReg_Exp1-12" + File.separator;
+MSR_speeds_base = "D:\\LMCB\\ChannelMigration\\Lokesh_Dani" + File.separator;
 
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_TM_Data.txt";
 data_string = File.openAsString(input_txt);
@@ -84,6 +85,7 @@ for (c = 1; c < lines.length; c++) {
 		selectImage(reg);
 		//roiManager("select", 1);
 		roiManager("Show None");
+		run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
 		doCommand("Start Animation [\\]");
 
 		open (TrackMateRegistrationFolder + savename);
@@ -94,6 +96,33 @@ for (c = 1; c < lines.length; c++) {
 		rename("TM_Kymo");
 		//roiManager("Show None");
 		selectImage("TrackMate");
+		run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
+		doCommand("Start Animation [\\]");
+
+		MSR_txt = MSR_speeds_base + folder + "Y_" + cell_data[2] + ".nd2.txt";
+		print(MSR_txt);
+		MSR_string = File.openAsString(MSR_txt);
+		MSR_data = split(MSR_string,"\n");
+		selectImage(Ch2);
+		run("Select None");
+		run("Duplicate...", "title=MSR duplicate");
+		for (q = 0; q < MSR_data.length; q++) {
+			setSlice(q+1);
+			print(MSR_data[q]);
+			print(MSR_data[q]+3);
+			print(abs(parseInt(MSR_data[q]))+3);
+			waitForUser("fdsfsdf");
+			run("Translate...", "x="+abs(parseInt(MSR_data[q]))+" y=0 interpolation=None slice");
+		}
+waitForUser(2);
+		roiManager("select", 1);
+		getBoundingRect(x, y, width, height);
+		makeRectangle(x, cell_data[3]-RectHeight/2, width, RectHeight)
+		run("Crop");
+		makeKymo();
+		rename("MSR_Kymo");
+		selectImage("MSR");
+		run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
 		doCommand("Start Animation [\\]");
 
 		close(ori);
@@ -105,7 +134,8 @@ for (c = 1; c < lines.length; c++) {
 			Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
 			Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
 			Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
-			Dialog.setLocation(200,400); 
+			Dialog.addString("Comments: ", "");
+			Dialog.setLocation(200,300); 
 			Dialog.show();
 		use_reg = Dialog.getChoice();
 //		waitForUser("All OK?");
