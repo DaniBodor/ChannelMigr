@@ -8,7 +8,8 @@ minArea = 500;
 //close("\\Others");
 basedir = getDirectory("Choose a Directory");
 dlist = getFileList(basedir);
-out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration";
+out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
+run("Close All");
 
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
 data_string = File.openAsString(input_txt);
@@ -25,7 +26,7 @@ for (c = 1; c < lines.length; c++) {
 	//cell_data [4] : direction
 	//cell_data [5] : TrackMate registration data (not used!)
 
-	print(c,cell_data[1], cell_data [2]);
+	//print(c,cell_data[1], cell_data [2]);
 
 	folder = dlist[cell_data[1]-1];
 	path = basedir + File.separator + folder + File.separator;
@@ -42,14 +43,18 @@ for (c = 1; c < lines.length; c++) {
 	Stack.setXUnit("px");
 	run("Properties...", "pixel_width=1 pixel_height=1");
 	run("Grays");
-	RegData = findCentroids;
+	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
+	RegData = findCentroids();
 
 	selectImage(ori);
 	Register_Movie(cell_data [3], RegData);
-	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
+	makeKymo();
 
+	saveAs("Tiff", out + savename);
+	print_array = Array.concat(newArray(c,cell_data[1], cell_data [2]),RegData);
+	concatPrint(print_array,"\t");
 
-	saveAs("Tiff", "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/output/200502190132_ChannelMigration/" + savename);
+	
 	run("Close All");
 }
 
@@ -77,7 +82,7 @@ function findCentroids(){
 		combineROIs();
 		roiManager("select", 0);
 		
-		if (i == 0)	X0 = getValue("X");
+		if (i == 0)		X0 = getValue("X");
 		Xpos[i] = getValue("X")-X0;
 		Ypos[i] = getValue("Y");
 	}
@@ -92,7 +97,7 @@ function findCentroids(){
 function makeKymo(){
 	makeLine(0, getHeight()/2, getWidth(), getHeight()/2);
 	run("Multi Kymograph", "linewidth=1");
-	kym = getTitle();
+	waitForUser("Kymo OK?");
 }
 
 function combineROIs(){
@@ -127,3 +132,11 @@ function Register_Movie(Y,Reg_positions){
 		}	
 	}
 }	
+
+function concatPrint(array,end){
+	line = "";
+	for (i = 0; i < array.length; i++) {
+		line = line + array[i] + end;
+	}
+	print(Line); 
+}
