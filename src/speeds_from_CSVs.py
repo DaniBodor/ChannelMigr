@@ -60,7 +60,7 @@ for file in CSV_list:
             
             distance = data.POSITION_X.iloc[-1] - data.POSITION_X.iloc[0]
             tot_time = data.FRAME.iloc[-1] - data.FRAME[0]
-            speed = abs(distance) / tot_time * unit_conversion
+            velocity = abs(distance) / tot_time * unit_conversion
             
             exp_no = file[:file.index('_')]
     #        prefix = '{}_{}_{}_{}'.format(file[:9],file[9],file[10:12],file[12])
@@ -74,7 +74,7 @@ for file in CSV_list:
             displ_speed = displ / tot_time * unit_conversion
             
             # set direction of migration (pos to right, neg to left)
-            swap_dir = 0
+            swapdir = 0
             if file in neg_migrators:
                 swapdir = 1
             if distance<0:
@@ -94,9 +94,9 @@ for file in CSV_list:
             # Get mean Y_pos
             Ymean = int(round(data.POSITION_Y.mean()))
     
-            outdf.loc[len(outdf)] = [exp_no,cell_name,speed,displ_speed,t0,len(data),Ymean,direction,nonlin,file,TimeReg]
+            outdf.loc[len(outdf)] = [exp_no,cell_name,velocity,displ_speed,t0,len(data),Ymean,direction,nonlin,file,TimeReg]
     
-export_columns = ['exp#','cell_name','Y_mean','direction','TimeReg']
-#outdf[export_columns].to_csv(current + '_Reg_Data.csv')
+export_columns = ['exp#','cell_name','Y_mean','direction','TimeReg','velocity']
+outdf[export_columns].to_csv(current + '_TM_Data.csv')
             
 print('ready')

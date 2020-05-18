@@ -19,12 +19,12 @@ dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
 run("Close All");
 print("\\Clear");
-headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","points","TM_Reg","centr_Reg");
+headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","points","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
 
 
-input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_Reg_Data.txt";
+input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_TM_Data.txt";
 data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
 
@@ -38,6 +38,7 @@ for (c = 1; c < lines.length; c++) {
 	//cell_data [3] : Y_mean
 	//cell_data [4] : direction
 	//cell_data [5] : TrackMate registration data (not used!)
+	//cell_data [6] : TM velocity
 
 	//print(c,cell_data[1], cell_data [2]);
 
@@ -99,7 +100,7 @@ for (c = 1; c < lines.length; c++) {
 //		waitForUser("All OK?");
 	}
 
-	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, time+1, cell_data[5]);	
+	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 	selectImage(reg);
 	saveAs("Tiff", out + savename);
