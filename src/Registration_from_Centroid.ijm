@@ -28,7 +28,7 @@ basedir = "D:\\LMCB\\ChannelMigration\\Raw"+File.separator;
 dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Reg_images"+File.separator;
 File.makeDirectory(out);
-headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","TM_Reg","centr_Reg");
+headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
 //MSR_Folder = "D:\\LMCB\\ChannelMigration\\_MultiStackReg_Exp1-12" + File.separator;
@@ -138,18 +138,20 @@ for (c = 1; c < lines.length; c++) {
 		Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
 		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
-		Dialog.addString("Comments: ", "");
+		Dialog.addString("Comments: ", "-");
 		Dialog.setLocation(0,500);
 		Dialog.show();
 	use_reg = Dialog.getChoice();
+	info = Dialog.getString();
+	if (info == "")	info = "-";
 
-	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
+	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, info, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
 	selectImage(use_reg);
 	saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
 	
-	run("Close All");
+	close("*");
 }
 
 
