@@ -74,7 +74,7 @@ for (c = 1; c < lines.length; c++) {
 
 	selectImage(ori);
 	Register_Movie(cell_data [3], RegData);
-	reg = getTitle();
+	centr_reg = getTitle();
 	cropRegImage();
 	
 	selectImage(ori);
@@ -90,7 +90,7 @@ for (c = 1; c < lines.length; c++) {
 		
 	
 	// display centroid image + kymograph
-	reg = displayRegType(reg,"Centroid",2);			// displayRegType(image_id,reg_type,kymo_channel)
+	centr_reg = displayRegType(centr_reg,"Centroid",2);
 
 	// display TrackMate registration + kymograph
 	open (TrackMateRegistrationFolder + savename);
@@ -124,8 +124,8 @@ for (c = 1; c < lines.length; c++) {
 	// display and wait for user to determine best registration
 	close(ori);
 	close(Ch2);
-	displayAll(3);
 	run("Tile");
+	displayAll(3);
 	Dialog.createNonBlocking(ori);
 		Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
 		Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
@@ -133,10 +133,11 @@ for (c = 1; c < lines.length; c++) {
 		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
 		Dialog.addString("Comments: ", "");
-		Dialog.setLocation(200,300); 
+		Dialog.setLocation(400,300); 
 		Dialog.show();
 	use_reg = Dialog.getChoice();
 
+	selectImage(id)
 
 	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
@@ -258,6 +259,7 @@ function cropRegImage(){
 
 function displayRegType(image_id,reg_type,channel){
 	selectImage(image_id);
+	getMinAndMax(min, max);
 	rename(reg_type);
 	
 	makeKymo(channel);
@@ -266,6 +268,7 @@ function displayRegType(image_id,reg_type,channel){
 	selectImage(reg_type);
 	setSlice(channel);
 	roiManager("Show None");
+	setMinAndMax(min*10, max*0.8);
 	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
 	doCommand("Start Animation [\\]");
 
