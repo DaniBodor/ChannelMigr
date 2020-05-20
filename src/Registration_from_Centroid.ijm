@@ -27,7 +27,7 @@ print("\\Clear");
 basedir = "D:\\LMCB\\ChannelMigration\\Raw"+File.separator;
 dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
-headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","points","TM_Reg","centr_Reg");
+headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
 //MSR_Folder = "D:\\LMCB\\ChannelMigration\\_MultiStackReg_Exp1-12" + File.separator;
@@ -102,47 +102,42 @@ for (c = 1; c < lines.length; c++) {
 	MSR_txt = MSR_speeds_base + folder + "Y_" + cell_data[2] + ".nd2.txt";
 	MSR_string = File.openAsString(MSR_txt);
 	MSR_data = split(MSR_string,"\n");
-	selectImage(Ch2);
-waitForUser(Ch2);
-	run("Select None");
-	run("Duplicate...", "title=MSR duplicate");
-	for (q = 0; q < MSR_data.length; q++) {
-		setSlice(q+1);
-		print(MSR_data[q]);
-		print(MSR_data[q]+3);
-		print(abs(parseInt(MSR_data[q]))+3);
-		waitForUser("fdsfsdf");
-		run("Translate...", "x="+abs(parseInt(MSR_data[q]))+" y=0 interpolation=None slice");
+
+	if (MSR_data[0] != "0"){
+		waitForUser(ori+"\n MSR doesn't start at 0")
 	}
-waitForUser(2);
+	MSR_data[0] = 0;
+	for (l = 1; l < MSR_data.length; l++) {
+		if (cell_data [4] == "right")		MSR_data[l] = parseInt(MSR_data[l]) + MSR_data[l-1];
+		else 								MSR_data[l] = (-1 * parseInt(MSR_data[l])) + MSR_data[l-1];
+	}
+
+	selectImage(ori);
+	Register_Movie(cell_data [3], MSR_data);
 
 	roiManager("select", 1);
-	getBoundingRect(x, y, width, height);
-	makeRectangle(x, cell_data[3]-RectHeight/2, width, RectHeight)
+	MSR_speed = MSR_data[MSR_data.length-1]/(MSR_data.length-1);
+	MSR_speed = MSR_speed * pixelsize / interval;
 	run("Crop");
-	makeKymo();
-	rename("MSR_Kymo");
-	selectImage("MSR");
-	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
-	doCommand("Start Animation [\\]");
+	MSR_im = displayRegType(getTitle(),"MSR",2);
 
+	// display and wait for user to determine best registration
 	close(ori);
 	close(Ch2);
 	run("Tile");
-//		selectImage(nImages);
-//		run("Set... ", "zoom=100");
 	Dialog.createNonBlocking(ori);
 		Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
 		Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
+		Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
+		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
 		Dialog.addString("Comments: ", "");
 		Dialog.setLocation(200,300); 
 		Dialog.show();
 	use_reg = Dialog.getChoice();
-//		waitForUser("All OK?");
 
 
-	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], time+1, cell_data[5]);	
+	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
 	run("Close All");
@@ -260,17 +255,29 @@ function cropRegImage(){
 	close(ch2_reg);
 }
 
-function displayRegType(image_id,reg_type,kymo_channel){
+function displayRegType(image_id,reg_type,channel){
 	selectImage(image_id);
 	rename(reg_type);
 	
-	makeKymo(kymo_channel);
+	makeKymo(channel);
 	rename(reg_type + "_Kymo");
 	
 	selectImage(reg_type);
+	setSlice(channel);
 	roiManager("Show None");
 	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
 	doCommand("Start Animation [\\]");
 
 	return getTitle();
+}
+
+
+function displayAll(nTypes){
+	h_buffer = 12;
+	w_buffer = 6;
+	selectImage(1);
+	h = (getHeight()+h_buffer) * nTypes;
+	w = getWidth() * 2 + w_buffer;
+
+	
 }
