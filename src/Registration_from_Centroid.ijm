@@ -14,6 +14,7 @@ cropThresh = "Triangle";
 
 Reg_Types = newArray("Centr","TM","MSR","None","Unclear");
 
+
 run("Close All");
 print("\\Clear");
 
@@ -34,7 +35,7 @@ TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigra
 //MSR_Folder = "D:\\LMCB\\ChannelMigration\\_MultiStackReg_Exp1-12" + File.separator;
 MSR_speeds_base = "D:\\LMCB\\ChannelMigration\\Lokesh_Dani" + File.separator;
 
-input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/200502190132_ChannelMigration_TM_Data.txt";
+input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/RegMacro_input.txt";
 data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
 
@@ -148,9 +149,11 @@ for (c = 1; c < lines.length; c++) {
 	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, info, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
-	selectImage(use_reg);
-	saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
-	
+	if (isOpen(use_reg)){
+		selectImage(use_reg);
+		saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
+	}
+		
 	close("*");
 }
 
