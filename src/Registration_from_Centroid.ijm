@@ -38,8 +38,8 @@ data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
 
 
-headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
-//concatPrint(headers,"\t");
+headers = newArray("i","df_i","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
+concatPrint(headers,"\t");
 
 
 // run through data list to find which cells to use
@@ -130,6 +130,7 @@ for (c = 1; c < lines.length; c++) {
 	close(Ch2);
 	run("Tile");
 	displayAll(3);
+	run("Hide Overlay");
 	for (id = 1; id < nImages+1; id++) {
 		selectImage(id);
 		if(nSlices > 1)		doCommand("Start Animation [\\]");
@@ -141,14 +142,16 @@ for (c = 1; c < lines.length; c++) {
 		Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
 		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
-		Dialog.addString("Comments: ", "-");
+		Dialog.addString("Comments: ", "");
 		Dialog.setLocation(0,500);
 		Dialog.show();
 	use_reg = Dialog.getChoice();
 	info = Dialog.getString();
-	if (info == "")	info = "-";
+	if (info == "kill" || info == "quit" || info == "abort")	exit("macro aborted by user");
+	else if (info == "")	info = 0; 
+	else					info = info.replace(" ","_");
 
-	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, info, cell_data[5]);	
+	outdata = newArray(c,cell_data [0],cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, info, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
 	if (isOpen(use_reg)){
@@ -301,7 +304,7 @@ function displayAll(nTypes){
 	new_w = getWidth() * 2 + w_buffer;
 	Stack.getDimensions(width, height, channels, slices, frames)
 
-	newImage("Combi", "16-bit black", new_w, new_h, frames);
+	newImage("Combi_"+ori, "16-bit black", new_w, new_h, frames);
 	new = getTitle();
 
 	for (i = 0; i < frames; i++) {
