@@ -124,6 +124,7 @@ for (c = 1; c < lines.length; c++) {
 	// display and wait for user to determine best registration
 	close(ori);
 	close(Ch2);
+	displayAll(3);
 	run("Tile");
 	Dialog.createNonBlocking(ori);
 		Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
@@ -276,8 +277,44 @@ function displayAll(nTypes){
 	h_buffer = 12;
 	w_buffer = 6;
 	selectImage(1);
-	h = (getHeight()+h_buffer) * nTypes;
-	w = getWidth() * 2 + w_buffer;
+	getMinAndMax(min, max);
+	new_h = (getHeight() + h_buffer) * nTypes;
+	new_w = getWidth() * 2 + w_buffer;
+	Stack.getDimensions(width, height, channels, slices, frames)
 
-	
+	newImage("Movie", "16-bit black", new_w, new_h, frames);
+	new = getTitle();
+
+	for (i = 0; i < frames; i++) {
+		for (j = 0; j < nTypes; j++) {
+			// copy/paste movie frame
+			selectImage(j*2+1);		// selects correct movie
+			Stack.setFrame(i+1);			// selects correct frame
+			run("Copy");
+
+			selectImage(new);
+			setSlice(i+1);
+			makeRectangle (0, (h_buffer+height)*j + h_buffer, width, height);
+			run("Paste");
+
+			// copy/paste kymo
+			selectImage(j*2+2);		// selects correct kymo
+			run("Copy");
+			
+			selectImage(new);
+			makeRectangle(width+w_buffer, (h_buffer+height)*j + h_buffer + (height-frames)/2, width, frames);
+			run("Paste");
+
+			 drawString(Reg_Types[j], w_buffer, (h_buffer+height)*j + h_buffer);
+		}
+	}
+
+	// nice display
+	run("Select None");
+	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
+	setMinAndMax(min*10, max*0.8);
+	doCommand("Start Animation [\\]");
 }
+
+
+
