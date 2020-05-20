@@ -12,7 +12,7 @@ blursigma = 2;
 x_buffer = 8;
 cropThresh = "Triangle";
 
-Reg_Types = newArray("Centroid","TrackMate","MultiStackReg","None","Unclear");
+Reg_Types = newArray("Centr","TM","MSR","None","Unclear");
 
 run("Close All");
 print("\\Clear");
@@ -26,7 +26,8 @@ print("\\Clear");
 //basedir = getDirectory("Choose a Directory");
 basedir = "D:\\LMCB\\ChannelMigration\\Raw"+File.separator;
 dlist = getFileList(basedir);
-out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Centroid_Registration"+File.separator;
+out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Reg_images"+File.separator;
+File.makeDirectory(out);
 headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","TM_Reg","centr_Reg");
 concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
@@ -58,7 +59,7 @@ for (c = 1; c < lines.length; c++) {
 	if (File.exists(path + cell_data [2] + ".timecrop.tif"))	image_path = path + cell_data [2] + ".timecrop.tif";
 	else														image_path = path + cell_data [2] + ".nd2";
 
-	savename = cell_data[1] + "_" + cell_data[2] + ".tif";
+	savebasename = cell_data[1] + "_" + cell_data[2];
 	open(image_path);
 	ori = getTitle();
 	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
@@ -86,17 +87,17 @@ for (c = 1; c < lines.length; c++) {
 	// output data
 	time = RegData.length - 1;
 	px_speed = RegData[time] / time;
-	realspeed = px_speed * pixelsize / interval;
+	centr_speed = px_speed * pixelsize / interval;
 		
 	
 	// display centroid image + kymograph
-	centr_reg = displayRegType(centr_reg,"Centroid",2);
+	centr_reg = displayRegType(centr_reg,Reg_Types[0],2);
 
 	// display TrackMate registration + kymograph
-	open (TrackMateRegistrationFolder + savename);
+	open (TrackMateRegistrationFolder + savebasename + ".tif");
 	roiManager("select", 1);
 	run("Crop");
-	TM = displayRegType(getTitle(),"TrackMate",2);
+	TM = displayRegType(getTitle(),Reg_Types[1],2);
 
 	// create MSR from text
 	MSR_txt = MSR_speeds_base + folder + "Y_" + cell_data[2] + ".nd2.txt";
@@ -119,27 +120,35 @@ for (c = 1; c < lines.length; c++) {
 	MSR_speed = MSR_data[MSR_data.length-1]/(MSR_data.length-1);
 	MSR_speed = MSR_speed * pixelsize / interval;
 	run("Crop");
-	MSR_im = displayRegType(getTitle(),"MSR",2);
+	MSR_im = displayRegType(getTitle(),Reg_Types[2],2);
 
 	// display and wait for user to determine best registration
 	close(ori);
 	close(Ch2);
 	run("Tile");
 	displayAll(3);
+	for (id = 1; id < nImages+1; id++) {
+		selectImage(id);
+		if(nSlices > 1)		doCommand("Start Animation [\\]");
+	}
+	
 	Dialog.createNonBlocking(ori);
-		Dialog.addMessage("Centroid speed:  " + d2s(realspeed,2));
+		Dialog.addMessage("Centroid speed:  " + d2s(centr_speed,2));
 		Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
 		Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
 		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
 		Dialog.addString("Comments: ", "");
-		Dialog.setLocation(800,300); 
+		Dialog.setLocation(0,500);
 		Dialog.show();
 	use_reg = Dialog.getChoice();
 
-	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
+	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
+	selectImage(use_reg);
+	saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
+	
 	run("Close All");
 }
 
@@ -271,8 +280,6 @@ function displayRegType(image_id,reg_type,channel){
 	roiManager("Show None");
 	setMinAndMax(min*5, round(max*0.8));
 	overlayGrid(25,"both","magenta");
-	doCommand("Start Animation [\\]");
-
 	return getTitle();
 }
 
@@ -287,7 +294,7 @@ function displayAll(nTypes){
 	new_w = getWidth() * 2 + w_buffer;
 	Stack.getDimensions(width, height, channels, slices, frames)
 
-	newImage("Movie", "16-bit black", new_w, new_h, frames);
+	newImage("Combi", "16-bit black", new_w, new_h, frames);
 	new = getTitle();
 
 	for (i = 0; i < frames; i++) {
@@ -318,7 +325,6 @@ function displayAll(nTypes){
 	run("Select None");
 	overlayGrid(25,"both","magenta");
 	setMinAndMax(min*5, round(max*0.8));
-	doCommand("Start Animation [\\]");
 }
 
 
