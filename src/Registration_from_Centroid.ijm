@@ -290,6 +290,7 @@ function displayRegType(image_id,reg_type,channel){
 	roiManager("Show None");
 	setMinAndMax(min*5, round(max*0.8));
 	overlayGrid(25,"both","magenta");
+	run("Select None");
 	return getTitle();
 }
 
