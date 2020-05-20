@@ -133,11 +133,9 @@ for (c = 1; c < lines.length; c++) {
 		
 		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
 		Dialog.addString("Comments: ", "");
-		Dialog.setLocation(400,300); 
+		Dialog.setLocation(800,300); 
 		Dialog.show();
 	use_reg = Dialog.getChoice();
-
-	selectImage(id)
 
 	outdata = newArray(c,cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, realspeed, cell_data [6], MSR_speed, time+1, cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
@@ -184,7 +182,7 @@ function findCentroids(){
 function makeKymo(channel){
 	run("Duplicate...", "duplicate channels="+channel);
 	temp = getTitle();
-	makeLine(0, getHeight()/2, getWidth(), getHeight()/2);
+	makeLine(0, getHeight()/2, getWidth()-1, getHeight()/2);
 	run("Multi Kymograph", "linewidth=1");
 	close(temp);
 }
@@ -259,17 +257,20 @@ function cropRegImage(){
 
 function displayRegType(image_id,reg_type,channel){
 	selectImage(image_id);
+	Stack.setChannel(channel)
+	resetMinAndMax();
 	getMinAndMax(min, max);
 	rename(reg_type);
 	
 	makeKymo(channel);
 	rename(reg_type + "_Kymo");
+	setMinAndMax(min*5, round(max*0.8));
+	overlayGrid(25,"V","magenta");
 	
 	selectImage(reg_type);
-	setSlice(channel);
 	roiManager("Show None");
-	setMinAndMax(min*10, max*0.8);
-	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
+	setMinAndMax(min*5, round(max*0.8));
+	overlayGrid(25,"both","magenta");
 	doCommand("Start Animation [\\]");
 
 	return getTitle();
@@ -280,6 +281,7 @@ function displayAll(nTypes){
 	h_buffer = 12;
 	w_buffer = 6;
 	selectImage(1);
+	resetMinAndMax();
 	getMinAndMax(min, max);
 	new_h = (getHeight() + h_buffer) * nTypes;
 	new_w = getWidth() * 2 + w_buffer;
@@ -314,10 +316,37 @@ function displayAll(nTypes){
 
 	// nice display
 	run("Select None");
-	run("Grid...","Grid=Lines Area=1000 Color=Magenta Center");
-	setMinAndMax(min*10, max*0.8);
+	overlayGrid(25,"both","magenta");
+	setMinAndMax(min*5, round(max*0.8));
 	doCommand("Start Animation [\\]");
 }
 
 
 
+function overlayGrid(distance,direction,color){
+   requires("1.43j");
+   run("Remove Overlay");
+   width = getWidth();
+   height = getHeight();
+   tileWidth = distance;
+   tileHeight = distance;
+   xoff=tileWidth;
+   if (direction == "V" || direction == "both"){
+	   while (true && xoff<width) { // draw vertical lines
+	      makeLine(xoff, 0, xoff, height);
+	      run("Add Selection...", "stroke="+color+" width=1");
+	      xoff += tileWidth;
+	   }
+   }
+   yoff=tileHeight;
+   if (direction == "H" || direction == "both"){
+	   while (true && yoff<height) { // draw horizonal lines
+	      makeLine(0, yoff, width, yoff);
+	      run("Add Selection...", "stroke="+color+" width=1");
+	      yoff += tileHeight;
+	   }
+   }
+   
+   run("Select None");
+   // run("Grid...", "grid=Lines area=500 color=Magenta center");
+}
