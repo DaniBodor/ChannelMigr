@@ -29,8 +29,6 @@ basedir = "D:\\LMCB\\ChannelMigration\\Raw"+File.separator;
 dlist = getFileList(basedir);
 out = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\Reg_images"+File.separator;
 File.makeDirectory(out);
-headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
-concatPrint(headers,"\t");
 TrackMateRegistrationFolder = "C:\\Users\\dani\\Documents\\MyCodes\\ChannelMigration_Speeds\\output\\200502190132_ChannelMigration"+File.separator;
 //MSR_Folder = "D:\\LMCB\\ChannelMigration\\_MultiStackReg_Exp1-12" + File.separator;
 MSR_speeds_base = "D:\\LMCB\\ChannelMigration\\Lokesh_Dani" + File.separator;
@@ -38,6 +36,10 @@ MSR_speeds_base = "D:\\LMCB\\ChannelMigration\\Lokesh_Dani" + File.separator;
 input_txt = "C:/Users/dani/Documents/MyCodes/ChannelMigration_Speeds/resources/RegMacro_input.txt";
 data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
+
+
+headers = newArray("index","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
+//concatPrint(headers,"\t");
 
 
 // run through data list to find which cells to use
