@@ -62,106 +62,111 @@ for (c = 1; c < lines.length; c++) {
 	if (File.exists(path + cell_data [2] + ".timecrop.tif"))	image_path = path + cell_data [2] + ".timecrop.tif";
 	else														image_path = path + cell_data [2] + ".nd2";
 
+	runAnalysis = true;
+	if (!endsWith(image_path,"BSA_CM_013.nd2"))		runAnalysis = false;
 
-	savebasename = cell_data[1] + "_" + cell_data[2];
-	open(image_path);
-	ori = getTitle();
-	if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
-	run("Select None");
+	if (runAnalysis){
 
-	// Register based on Centroids
-	run("Duplicate...", "duplicate channels=2");
-	Ch2 = getTitle();
-	Stack.setXUnit("px");
-	run("Properties...", "pixel_width=1 pixel_height=1");
-	run("Grays");
-	RegData = findCentroids();
-
-	selectImage(ori);
-	Register_Movie(cell_data [3], RegData);
-	centr_reg = getTitle();
-	cropRegImage();
+		savebasename = cell_data[1] + "_" + cell_data[2];
+		open(image_path);
+		ori = getTitle();
+		if (cell_data [4] == "left")	run("Flip Horizontally", "stack");
+		run("Select None");
 	
-	selectImage(ori);
-	roiManager("add");
-	roiManager("select", roiManager("count")-1);
-	roiManager("rename", "Cell_Y full width");
+		// Register based on Centroids
+		run("Duplicate...", "duplicate channels=2");
+		Ch2 = getTitle();
+		Stack.setXUnit("px");
+		run("Properties...", "pixel_width=1 pixel_height=1");
+		run("Grays");
+		RegData = findCentroids();
 	
-	
-	// output data
-	time = RegData.length - 1;
-	px_speed = RegData[time] / time;
-	centr_speed = px_speed * pixelsize / interval;
+		selectImage(ori);
+		Register_Movie(cell_data [3], RegData);
+		centr_reg = getTitle();
+		cropRegImage();
 		
-	
-	// display centroid image + kymograph
-	centr_reg = displayRegType(centr_reg,Reg_Types[0],2);
-
-	// display TrackMate registration + kymograph
-	open (TrackMateRegistrationFolder + savebasename + ".tif");
-	roiManager("select", 1);
-	run("Crop");
-	TM = displayRegType(getTitle(),Reg_Types[1],2);
-
-	// create MSR from text
-	MSR_txt = MSR_speeds_base + folder + "Y_" + cell_data[2] + ".nd2.txt";
-	MSR_string = File.openAsString(MSR_txt);
-	MSR_data = split(MSR_string,"\n");
-
-	if (MSR_data[0] != "0"){
-		waitForUser(ori+"\n MSR doesn't start at 0")
-	}
-	MSR_data[0] = 0;
-	for (l = 1; l < MSR_data.length; l++) {
-		if (cell_data [4] == "right")		MSR_data[l] = parseInt(MSR_data[l]) + MSR_data[l-1];
-		else 								MSR_data[l] = (-1 * parseInt(MSR_data[l])) + MSR_data[l-1];
-	}
-
-	selectImage(ori);
-	Register_Movie(cell_data [3], MSR_data);
-
-	roiManager("select", 1);
-	MSR_speed = MSR_data[MSR_data.length-1]/(MSR_data.length-1);
-	MSR_speed = MSR_speed * pixelsize / interval;
-	run("Crop");
-	MSR_im = displayRegType(getTitle(),Reg_Types[2],2);
-
-	// display and wait for user to determine best registration
-	close(ori);
-	close(Ch2);
-//	waitForUser("close ori, etc");
-	run("Tile");
-	displayAll(3);
-	run("Hide Overlay");
-	for (id = 1; id < nImages+1; id++) {
-		selectImage(id);
-		if(nSlices > 1)		doCommand("Start Animation [\\]");
-	}
-	
-	Dialog.createNonBlocking(ori);
-		Dialog.addMessage("Centroid speed:  " + d2s(centr_speed,2));
-		Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
-		Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
+		selectImage(ori);
+		roiManager("add");
+		roiManager("select", roiManager("count")-1);
+		roiManager("rename", "Cell_Y full width");
 		
-		Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
-		Dialog.addString("Comments: ", "");
-		Dialog.setLocation(0,500);
-		Dialog.show();
-	use_reg = Dialog.getChoice();
-	comment = Dialog.getString();
-	if (comment == "kill" || comment == "quit" || comment == "abort")	exit("macro aborted by user");
-	else if (comment == "")	comment = 0; 
-	else					comment = comment.replace(" ","_");
-
-	outdata = newArray(c,cell_data [0],cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, comment, "-", cell_data[5]);	
-	concatPrint(Array.concat(outdata,RegData),"\t");
-
-	if (isOpen(use_reg)){
-		selectImage(use_reg);
-		saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
-	}
 		
-	close("*");
+		// output data
+		time = RegData.length - 1;
+		px_speed = RegData[time] / time;
+		centr_speed = px_speed * pixelsize / interval;
+			
+		
+		// display centroid image + kymograph
+		centr_reg = displayRegType(centr_reg,Reg_Types[0],2);
+	
+		// display TrackMate registration + kymograph
+		open (TrackMateRegistrationFolder + savebasename + ".tif");
+		roiManager("select", 1);
+		run("Crop");
+		TM = displayRegType(getTitle(),Reg_Types[1],2);
+	
+		// create MSR from text
+		MSR_txt = MSR_speeds_base + folder + "Y_" + cell_data[2] + ".nd2.txt";
+		MSR_string = File.openAsString(MSR_txt);
+		MSR_data = split(MSR_string,"\n");
+	
+		if (MSR_data[0] != "0"){
+			waitForUser(ori+"\n MSR doesn't start at 0")
+		}
+		MSR_data[0] = 0;
+		for (l = 1; l < MSR_data.length; l++) {
+			if (cell_data [4] == "right")		MSR_data[l] = parseInt(MSR_data[l]) + MSR_data[l-1];
+			else 								MSR_data[l] = (-1 * parseInt(MSR_data[l])) + MSR_data[l-1];
+		}
+	
+		selectImage(ori);
+		Register_Movie(cell_data [3], MSR_data);
+	
+		roiManager("select", 1);
+		MSR_speed = MSR_data[MSR_data.length-1]/(MSR_data.length-1);
+		MSR_speed = MSR_speed * pixelsize / interval;
+		run("Crop");
+		MSR_im = displayRegType(getTitle(),Reg_Types[2],2);
+	
+		// display and wait for user to determine best registration
+		close(ori);
+		close(Ch2);
+	//	waitForUser("close ori, etc");
+		run("Tile");
+		displayAll(3);
+		run("Hide Overlay");
+		for (id = 1; id < nImages+1; id++) {
+			selectImage(id);
+			if(nSlices > 1)		doCommand("Start Animation [\\]");
+		}
+		
+		Dialog.createNonBlocking(ori);
+			Dialog.addMessage("Centroid speed:  " + d2s(centr_speed,2));
+			Dialog.addMessage("TrackMate speed: " + d2s(cell_data[6],2));
+			Dialog.addMessage("MSR speed: " + d2s(MSR_speed,2));
+			
+			Dialog.addChoice("Which registration works better?", Reg_Types, "Centroid");
+			Dialog.addString("Comments: ", "");
+			Dialog.setLocation(0,500);
+			Dialog.show();
+		use_reg = Dialog.getChoice();
+		comment = Dialog.getString();
+		if (comment == "kill" || comment == "quit" || comment == "abort")	exit("macro aborted by user");
+		else if (comment == "")	comment = 0; 
+		else					comment = comment.replace(" ","_");
+	
+		outdata = newArray(c,cell_data [0],cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, comment, "-", cell_data[5]);	
+		concatPrint(Array.concat(outdata,RegData),"\t");
+	
+		if (isOpen(use_reg)){
+			selectImage(use_reg);
+			saveAs("Tiff", out + savebasename+"_Rtype="+use_reg+".tif");
+		}
+			
+		close("*");
+	}
 }
 
 
