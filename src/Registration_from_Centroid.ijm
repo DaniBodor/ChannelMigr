@@ -13,7 +13,7 @@ x_buffer = 8;
 cropThresh = "Triangle";
 
 Reg_Types = newArray("Centr","TM","MSR","None","Unclear");
-
+//excel_input = "=IF(H2=\"Centr\",I2,IF(H2=\"TM\",J2,IF(H2=\"MSR\",K2)))"
 
 run("Close All");
 print("\\Clear");
@@ -38,7 +38,7 @@ data_string = File.openAsString(input_txt);
 lines = split(data_string,"\n");
 
 
-headers = newArray("i","df_i","exp#","folder","file","y","dir","reg_type","centr_speed","TM_speed","MSR_speed_approx","points","Comments","TM_Reg","centr_Reg");
+headers = newArray("i","df_i","exp#","folder","file","y","dir","reg_type",Reg_Types[0]+"_speed",Reg_Types[1]+"_speed",Reg_Types[2]+"_speed","points","Comments","Velocity",Reg_Types[1]+"_reg",Reg_Types[0]+"_reg");
 concatPrint(headers,"\t");
 
 
@@ -61,6 +61,7 @@ for (c = 1; c < lines.length; c++) {
 	path = basedir + File.separator + folder + File.separator;
 	if (File.exists(path + cell_data [2] + ".timecrop.tif"))	image_path = path + cell_data [2] + ".timecrop.tif";
 	else														image_path = path + cell_data [2] + ".nd2";
+
 
 	savebasename = cell_data[1] + "_" + cell_data[2];
 	open(image_path);
@@ -128,6 +129,7 @@ for (c = 1; c < lines.length; c++) {
 	// display and wait for user to determine best registration
 	close(ori);
 	close(Ch2);
+//	waitForUser("close ori, etc");
 	run("Tile");
 	displayAll(3);
 	run("Hide Overlay");
@@ -146,12 +148,12 @@ for (c = 1; c < lines.length; c++) {
 		Dialog.setLocation(0,500);
 		Dialog.show();
 	use_reg = Dialog.getChoice();
-	info = Dialog.getString();
-	if (info == "kill" || info == "quit" || info == "abort")	exit("macro aborted by user");
-	else if (info == "")	info = 0; 
-	else					info = info.replace(" ","_");
+	comment = Dialog.getString();
+	if (comment == "kill" || comment == "quit" || comment == "abort")	exit("macro aborted by user");
+	else if (comment == "")	comment = 0; 
+	else					comment = comment.replace(" ","_");
 
-	outdata = newArray(c,cell_data [0],cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, info, cell_data[5]);	
+	outdata = newArray(c,cell_data [0],cell_data[1], folder, cell_data [2],cell_data[3], cell_data [4], use_reg, centr_speed, cell_data [6], MSR_speed, time+1, comment, "-", cell_data[5]);	
 	concatPrint(Array.concat(outdata,RegData),"\t");
 
 	if (isOpen(use_reg)){
@@ -276,9 +278,9 @@ function cropRegImage(){
 
 function displayRegType(image_id,reg_type,channel){
 	selectImage(image_id);
-	Stack.setChannel(channel)
-	resetMinAndMax();
-	getMinAndMax(min, max);
+	Stack.setChannel(channel);
+	getStatistics(area, mean, min, max, std, histogram);
+	setMinAndMax(min*5, round(max*0.8));
 	rename(reg_type);
 	
 	makeKymo(channel);
@@ -288,7 +290,6 @@ function displayRegType(image_id,reg_type,channel){
 	
 	selectImage(reg_type);
 	roiManager("Show None");
-	setMinAndMax(min*5, round(max*0.8));
 	overlayGrid(25,"both","magenta");
 	run("Select None");
 	return getTitle();
@@ -299,8 +300,7 @@ function displayAll(nTypes){
 	h_buffer = 12;
 	w_buffer = 6;
 	selectImage(1);
-	resetMinAndMax();
-	getMinAndMax(min, max);
+	getStatistics(area, mean, min, max, std, histogram);
 	new_h = (getHeight() + h_buffer) * nTypes;
 	new_w = getWidth() * 2 + w_buffer;
 	Stack.getDimensions(width, height, channels, slices, frames)
