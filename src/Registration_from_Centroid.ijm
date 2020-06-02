@@ -63,7 +63,7 @@ for (c = 1; c < lines.length; c++) {
 	else														image_path = path + cell_data [2] + ".nd2";
 
 	runAnalysis = true;
-	if (!endsWith(image_path,"BSA_CM_013.nd2"))		runAnalysis = false;
+//	if (!endsWith(image_path,"BSA_CM_013.nd2"))		runAnalysis = false;
 
 	if (runAnalysis){
 
@@ -372,3 +372,6 @@ function overlayGrid(distance,direction,color){
    run("Select None");
    // run("Grid...", "grid=Lines area=500 color=Magenta center");
 }
+
+
+MacroFinishedCrash
